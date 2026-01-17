@@ -53,3 +53,16 @@ Desktop.ini
 
 # VS Code (Optional, but keeps settings private)
 .vscode/
+
+# virtual environments
+venv/
+.venv/
+
+# macOS system files
+.DS_Store
+
+# Python cache files
+__pycache__/
+
+# Visual Studio Code workspace files
+*.code-workspace
