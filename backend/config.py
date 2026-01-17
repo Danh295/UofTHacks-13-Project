@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     
     debug: bool = True
     cors_origins: str = "*"
+    
+    # Redis configuration
+    redis_url: str = "redis://localhost:6379"
+    state_ttl: int = 86400  # 24 hours in seconds
 
     model_config = SettingsConfigDict(
         env_file=".env", 
