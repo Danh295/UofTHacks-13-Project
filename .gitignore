@@ -15,6 +15,8 @@ venv/
 
 # Python cache files
 __pycache__/
+*.py[cod]
+*$py.class
 
 # Visual Studio Code workspace files
 *.code-workspace
