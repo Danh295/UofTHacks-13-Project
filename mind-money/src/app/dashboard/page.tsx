@@ -126,7 +126,7 @@ export default function DashboardPage() {
                    <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-[var(--border)]">
                      <ListTodo className="w-12 h-12 text-[var(--text-light)] mx-auto mb-3" />
                      <p className="text-[var(--text-secondary)]">No actions generated yet.</p>
-                     <p className="text-xs text-[var(--text-light)] mt-1">Chat with MindMoney to build your plan.</p>
+                     <p className="text-xs text-[var(--text-light)] mt-1">Chat with MoneyBird to build your plan.</p>
                    </div>
                  ) : (
                    sortedActions.map(action => <ActionItem key={action.id} item={action} onToggle={toggleAction} />)
@@ -142,7 +142,7 @@ export default function DashboardPage() {
                  <div className="text-center py-16">
                    <Loader2 className="w-12 h-12 text-[var(--primary)]/30 animate-spin mx-auto mb-4" />
                    <p className="text-[var(--text-secondary)]">No form schema available yet.</p>
-                   <p className="text-xs text-[var(--text-light)] mt-1">Chat with MindMoney to generate your intake form.</p>
+                   <p className="text-xs text-[var(--text-light)] mt-1">Chat with MoneyBird to generate your intake form.</p>
                  </div>
               ) : (
                 <form className="space-y-8">

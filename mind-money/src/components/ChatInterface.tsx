@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, BrainCircuit, X, Sparkles, LayoutDashboard, History, LogIn, LogOut, ArrowUp } from 'lucide-react';
+import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
@@ -18,12 +19,11 @@ type ChatSession = { session_id: string; preview: string; last_message_at: strin
 
 export default function ChatInterface() {
   const { addActionPlan } = useFinancial(); 
-  const { messages, addMessage, setMessages, isThinking, setIsThinking, sessionId: contextSessionId } = useChat();
+  const { messages, addMessage, setMessages, isThinking, setIsThinking } = useChat();
   const { user, signOut } = useAuth();
   const router = useRouter();
   
-  // Use context session ID if available, otherwise default logic
-  const [sessionId, setSessionId] = useState(contextSessionId);
+  const [sessionId, setSessionId] = useState(`session-${Date.now()}`);
   const [input, setInput] = useState('');
   const [showAgentPanel, setShowAgentPanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
@@ -32,6 +32,8 @@ export default function ChatInterface() {
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([]);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [isMascotTalking, setIsMascotTalking] = useState(false);
+  const [mascotAnimation, setMascotAnimation] = useState<'bounce' | 'wiggle'>('bounce');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -40,43 +42,47 @@ export default function ChatInterface() {
 
   useEffect(() => { scrollToBottom(); }, [messages, agentLogs]);
 
-  // Sync local session ID with context session ID if it changes
+  // Randomly switch mascot animation while talking
   useEffect(() => {
-    setSessionId(contextSessionId);
-  }, [contextSessionId]);
-
-  // Fetch chat sessions
-  useEffect(() => {
-    const fetchChatSessions = async () => {
-      // If no user, we don't fetch history (Guest Mode)
-      if (!user) {
-        setChatSessions([]);
-        return;
-      }
+    if (isMascotTalking) {
+      const interval = setInterval(() => {
+        setMascotAnimation(Math.random() > 0.5 ? 'bounce' : 'wiggle');
+      }, 600); // Switch every 600ms
       
-      setIsLoadingSessions(true);
-      try {
-        const res = await fetch(`http://127.0.0.1:8000/api/sessions?user_id=${user.id}`);
-        const data = await res.json();
-        setChatSessions(data.sessions || []);
-      } catch (err) {
-        console.error('Failed to fetch sessions:', err);
-      } finally {
-        setIsLoadingSessions(false);
-      }
-    };
-    
-    if (showHistoryPanel) fetchChatSessions();
-  }, [showHistoryPanel, user]);
+      return () => clearInterval(interval);
+    }
+  }, [isMascotTalking]);
+
+  // Fetch chat sessions when history panel is opened
+  useEffect(() => {
+    if (showHistoryPanel && chatSessions.length === 0) {
+      fetchChatSessions();
+    }
+  }, [showHistoryPanel]);
+
+  const fetchChatSessions = async () => {
+    setIsLoadingSessions(true);
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/sessions');
+      const data = await res.json();
+      setChatSessions(data.sessions || []);
+    } catch (err) {
+      console.error('Failed to fetch sessions:', err);
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  };
 
   const loadChatHistory = async (selectedSessionId: string) => {
     try {
       const res = await fetch(`http://127.0.0.1:8000/api/history/${selectedSessionId}`);
       const data = await res.json();
+      
       if (data.history && data.history.length > 0) {
         setMessages(data.history);
         setSessionId(selectedSessionId);
         setShowHistoryPanel(false);
+        // Also clear logs on new chat load
         setAgentLogs([]);
       }
     } catch (err) {
@@ -85,9 +91,8 @@ export default function ChatInterface() {
   };
 
   const startNewChat = () => {
-    setMessages([{ id: '1', role: 'assistant', content: 'Hello. I am MindMoney. I am here to optimize your financial life. How can I help you today?' }]);
-    // Generate new ID for new chat
-    setSessionId(`sess-${Date.now()}`);
+    setMessages([{ id: '1', role: 'assistant', content: 'Hello. I am MoneyBird. I am here to optimize your financial life. How can I help you today?' }]);
+    setSessionId(`session-${Date.now()}`);
     setAgentLogs([]);
     setShowHistoryPanel(false);
   };
@@ -98,7 +103,10 @@ export default function ChatInterface() {
     addMessage(userMsg);
     setInput('');
     setIsThinking(true);
-    setAgentLogs([]); 
+    setAgentLogs([]);
+    
+    // Open mascot mouth - animation will switch randomly via useEffect
+    setIsMascotTalking(true);
 
     try {
       const res = await fetch('http://127.0.0.1:8000/api/chat', {
@@ -107,19 +115,20 @@ export default function ChatInterface() {
         body: JSON.stringify({
           message: userMsg.content,
           history: messages.map((m: Message) => ({ role: m.role, content: m.content })),
-          session_id: sessionId,
-          user_id: user?.id // <--- SENDING USER ID FOR TRACKING
+          session_id: sessionId
         })
       });
 
       const data = await res.json();
 
+      // --- FIX 2: Ensure logs are parsed correctly ---
       if (data.agent_logs && Array.isArray(data.agent_logs)) {
+        // Animate logs in
         data.agent_logs.forEach((log: any, index: number) => {
           setTimeout(() => {
             setAgentLogs(prev => [...prev, {
               id: `log-${index}`,
-              agentName: log.agent || log.agentName, 
+              agentName: log.agent || log.agentName, // Handle both naming conventions
               status: log.status || 'success',
               thought: log.thought,
               output: log.output
@@ -132,6 +141,7 @@ export default function ChatInterface() {
       
       setTimeout(() => {
         setIsThinking(false);
+        setIsMascotTalking(false); // Close mouth after response is complete
         if (data.action_plan && Object.keys(data.action_plan).length > 0) {
             addActionPlan(data.action_plan);
         }
@@ -145,6 +155,7 @@ export default function ChatInterface() {
     } catch (err) {
       console.error(err);
       setIsThinking(false);
+      setIsMascotTalking(false); // Close mouth on error
       addMessage({ id: Date.now().toString(), role: 'assistant', content: "⚠️ I'm having trouble reaching the brain. Ensure the backend is running on port 8000." });
     }
   };
@@ -152,6 +163,54 @@ export default function ChatInterface() {
   return (
     <div className="flex h-screen bg-[var(--background)] overflow-hidden relative text-[var(--text-primary)]">
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+
+      {/* MASCOT */}
+      <div className="fixed bottom-24 left-8 z-30 pointer-events-none">
+        <style jsx>{`
+          @keyframes mascot-bounce {
+            0%, 100% {
+              transform: translateY(0);
+            }
+            25% {
+              transform: translateY(-20px);
+            }
+            50% {
+              transform: translateY(0);
+            }
+            75% {
+              transform: translateY(-15px);
+            }
+          }
+          @keyframes mascot-wiggle {
+            0%, 100% {
+              transform: translateX(0);
+            }
+            20% {
+              transform: translateX(-6px);
+            }
+            40% {
+              transform: translateX(6px);
+            }
+            60% {
+              transform: translateX(-5px);
+            }
+            80% {
+              transform: translateX(5px);
+            }
+          }
+          .mascot-bounce {
+            animation: mascot-bounce 0.6s ease-in-out infinite;
+          }
+          .mascot-wiggle {
+            animation: mascot-wiggle 0.8s ease-in-out infinite;
+          }
+        `}</style>
+        <img
+          src={isMascotTalking ? '/images/mascotO.PNG' : '/images/mascotC.PNG'}
+          alt="MoneyBird Mascot"
+          className={`w-80 h-80 object-contain drop-shadow-lg transition-all duration-200 ${isMascotTalking ? (mascotAnimation === 'bounce' ? 'mascot-bounce' : 'mascot-wiggle') : ''}`}
+        />
+      </div>
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col max-w-7xl mx-auto w-full bg-white shadow-2xl rounded-2xl h-[calc(100vh-4rem)] my-8 relative overflow-hidden border border-[var(--border)]">
@@ -163,10 +222,15 @@ export default function ChatInterface() {
               <History size={20} />
             </button>
             <div className="flex items-center gap-3">
-              <div className="bg-[var(--primary)] p-1.5 rounded-lg shadow-sm">
-                <Sparkles className="text-white w-5 h-5" />
+              <div className="relative w-8 h-8">
+                <Image
+                  src="/images/logo.png"
+                  alt="MoneyBird Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
-              <h1 className="font-bold text-[var(--text-primary)] text-lg tracking-tight">MindMoney</h1>
+              <h1 className="font-bold text-[var(--text-primary)] text-lg tracking-tight">MoneyBird</h1>
             </div>
           </div>
           
@@ -191,7 +255,7 @@ export default function ChatInterface() {
         </header>
 
         {/* MESSAGES */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[var(--background)]">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[var(--background)] relative">
           {messages.map((msg: Message) => (
             <div key={msg.id} className={clsx("flex gap-4 max-w-3xl mx-auto", msg.role === 'user' ? "flex-row-reverse" : "")}>
               <div className={clsx("w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm", msg.role === 'assistant' ? "bg-white border border-[var(--border)]" : "bg-[var(--primary)]")}>
@@ -252,56 +316,115 @@ export default function ChatInterface() {
         </div>
       </div>
 
-      {/* HISTORY PANEL */}
-      <div className={clsx("fixed inset-y-0 left-0 w-80 bg-[var(--background)] shadow-2xl transform transition-transform duration-300 ease-in-out border-r border-[var(--border)] z-50", showHistoryPanel ? "translate-x-0" : "-translate-x-full")}>
-        <div className="p-5 border-b border-[var(--border)] flex justify-between items-center">
-          <h3 className="text-[var(--text-primary)] font-bold text-sm uppercase tracking-wider">Conversations</h3>
-          <button onClick={() => setShowHistoryPanel(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><X size={18} /></button>
+      {/* LEFT: CHAT HISTORY PANEL (Collapsible) */}
+      <div className={clsx("fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out border-r border-slate-200 z-50", showHistoryPanel ? "translate-x-0" : "-translate-x-full")}>
+        <div className="p-4 border-b border-[var(--border)] bg-gradient-to-r from-[var(--neutral)] to-[var(--secondary-light)] flex justify-between items-center">
+          <h3 className="text-[var(--text-primary)] font-semibold text-sm uppercase tracking-wider">
+            Chat History
+          </h3>
+          <button onClick={() => setShowHistoryPanel(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+            <X size={16} />
+          </button>
         </div>
-        <div className="p-4 space-y-3 overflow-y-auto h-full">
-            {user ? (
-                <>
-                    <button onClick={startNewChat} className="w-full btn-primary flex items-center justify-center gap-2 mb-4 text-sm">Start New Chat</button>
-                    {chatSessions.map((session) => (
-                    <div key={session.session_id} onClick={() => loadChatHistory(session.session_id)} className={clsx("p-3 rounded-xl border cursor-pointer transition-all hover:shadow-sm", session.session_id === sessionId ? "bg-white border-[var(--primary)] ring-1 ring-[var(--primary)]/20" : "bg-white border-[var(--border)] hover:border-[var(--accent)]")}>
-                        <p className="text-sm font-medium text-[var(--text-primary)] line-clamp-1">{session.preview || "New Conversation"}</p>
-                        <p className="text-xs text-[var(--text-secondary)] mt-1">{new Date(session.last_message_at).toLocaleDateString()}</p>
-                    </div>
-                    ))}
-                    {chatSessions.length === 0 && (
-                        <div className="text-center text-[var(--text-light)] text-xs mt-8">No saved conversations.</div>
-                    )}
-                </>
-            ) : (
-                <div className="text-center text-[var(--text-light)] text-xs mt-10">
-                    <p className="mb-2">Sign in to save and access your conversation history.</p>
-                    <button onClick={() => setShowAuthModal(true)} className="text-[var(--primary)] underline">Sign In</button>
+        
+        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-120px)]">
+          {/* New Chat Button */}
+          <button
+            onClick={startNewChat}
+            className="w-full bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] hover:shadow-md text-white rounded-lg p-3 text-sm font-medium transition-all flex items-center justify-center gap-2"
+          >
+            <Sparkles size={16} />
+            Start New Chat
+          </button>
+
+          {/* Loading State */}
+          {isLoadingSessions && (
+            <div className="text-center text-slate-400 text-sm py-4">
+              Loading sessions...
+            </div>
+          )}
+
+          {/* Chat Sessions */}
+          {!isLoadingSessions && chatSessions.length === 0 && (
+            <div className="text-center text-slate-400 text-xs mt-10">
+              No chat history yet.<br/>Start a conversation to see it here.
+            </div>
+          )}
+
+          {chatSessions.map((session, index) => {
+            const date = new Date(session.last_message_at);
+            const isToday = date.toDateString() === new Date().toDateString();
+            const isYesterday = date.toDateString() === new Date(Date.now() - 86400000).toDateString();
+            
+            let timeLabel = '';
+            if (isToday) {
+              timeLabel = 'Today';
+            } else if (isYesterday) {
+              timeLabel = 'Yesterday';
+            } else {
+              timeLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+
+            return (
+              <div
+                key={session.session_id}
+                onClick={() => loadChatHistory(session.session_id)}
+                className={clsx(
+                  "bg-[var(--neutral)] rounded-lg p-3 border border-[var(--border)] hover:bg-[var(--neutral-dark)] cursor-pointer transition-colors",
+                  session.session_id === sessionId && "bg-[var(--secondary-light)] border-[var(--primary)]"
+                )}>
+                <div className="flex items-center gap-2 mb-1">
+                  {index === 0 && <div className="w-2 h-2 rounded-full bg-[var(--success)]" />}
+                  <span className="font-semibold text-sm text-[var(--text-primary)]">{timeLabel}</span>
                 </div>
-            )}
+                <p className="text-xs text-[var(--text-secondary)] line-clamp-2">
+                  {session.preview}
+                </p>
+                <span className="text-[10px] text-[var(--text-light)] mt-1 block">
+                  {date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* AGENT PANEL (Same as before) */}
-      <div className={clsx("fixed inset-y-0 right-0 w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-[var(--border)] z-50", showAgentPanel ? "translate-x-0" : "translate-x-full")}>
-        <div className="p-5 border-b border-[var(--border)] flex justify-between items-center bg-[var(--neutral)]">
-          <h3 className="text-[var(--primary-dark)] font-mono text-sm font-bold uppercase tracking-wider">System Logic</h3>
-          <button onClick={() => setShowAgentPanel(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><X size={18} /></button>
+      {/* RIGHT: AGENT NERVE CENTER (Collapsible) */}
+      <div className={clsx(
+        "fixed inset-y-0 right-0 w-80 bg-[var(--primary-dark)] shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-[var(--primary)] z-50",
+        showAgentPanel ? "translate-x-0" : "translate-x-full"
+      )}>
+        <div className="p-4 border-b border-[var(--primary)] bg-gradient-to-r from-[var(--primary-dark)] to-[var(--primary)] flex justify-between items-center">
+          <h3 className="text-white font-mono text-xs font-bold uppercase tracking-wider">
+            Orchestration Log
+          </h3>
+          <button onClick={() => setShowAgentPanel(false)} className="text-white/70 hover:text-white">
+            <X size={16} />
+          </button>
         </div>
-        <div className="p-5 space-y-4 overflow-y-auto h-full bg-[var(--background)]">
-            {agentLogs.length === 0 && (
-               <div className="text-center text-[var(--text-light)] text-xs mt-10">
-                 Thinking process will appear here...
-               </div>
-            )}
-            {agentLogs.map((log, i) => (
-                <div key={i} className="bg-white rounded-xl p-4 border border-[var(--border)] text-sm shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className={clsx("w-2 h-2 rounded-full", log.status === 'failed' ? "bg-[var(--danger)]" : "bg-[var(--success)]")} />
-                    <span className="font-bold text-[var(--text-primary)]">{log.agentName}</span>
-                  </div>
-                  <p className="text-[var(--text-secondary)] leading-relaxed font-mono text-xs">{log.thought}</p>
-                </div>
-            ))}
+        
+        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-60px)]">
+          {agentLogs.map((log, i) => (
+            <div key={i} className="bg-white/10 rounded-lg p-3 border border-white/20 text-xs animate-in fade-in slide-in-from-right-8">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={clsx("w-2 h-2 rounded-full", log.status === 'failed' ? "bg-[var(--danger)]" : "bg-[var(--success)]")} />
+                <span className="font-bold text-white">{log.agentName}</span>
+              </div>
+              <p className="text-white/80 font-mono leading-relaxed opacity-80">
+                {log.thought}
+              </p>
+              {log.output && (
+                 <div className="mt-2 pt-2 border-t border-white/20 text-[10px] text-[var(--secondary-light)] font-mono truncate">
+                   Output: {log.output}
+                 </div>
+              )}
+            </div>
+          ))}
+          {agentLogs.length === 0 && (
+            <div className="text-center text-white/50 mt-10 text-xs">
+              Systems Idle.<br/>Waiting for user input.
+            </div>
+          )}
         </div>
       </div>
     </div>

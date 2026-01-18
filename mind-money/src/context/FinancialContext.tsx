@@ -28,13 +28,13 @@ export function FinancialProvider({ children }: { children: React.ReactNode }) {
 
   // Load from local storage on mount (Persistence)
   useEffect(() => {
-    const saved = localStorage.getItem('mindmoney_actions');
+    const saved = localStorage.getItem('moneybird_actions');
     if (saved) setActions(JSON.parse(saved));
   }, []);
 
   // Save to local storage whenever actions change
   useEffect(() => {
-    localStorage.setItem('mindmoney_actions', JSON.stringify(actions));
+    localStorage.setItem('moneybird_actions', JSON.stringify(actions));
   }, [actions]);
 
   const addActionPlan = (rawJson: any) => {
