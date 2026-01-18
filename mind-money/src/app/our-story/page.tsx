@@ -140,7 +140,7 @@ export default function OurStoryPage() {
 不必急著飛。
               </p>
               
-              <div className="mt-6 p-4 bg-gradient-to-r from-[var(--secondary-light)] to-[var(--neutral)] rounded-lg border border-[var(--border)]">
+              <div className="mt-6 p-4 bg-[var(--secondary-light)] rounded-lg border border-[var(--border)]">
                 <p className="text-sm text-[var(--text-secondary)] italic text-center">
                   "We were founded in 2026. Not because the world needs more tools, but because we ourselves once stood in the midst of life, unsure of where to fly. We are all different heights—175 cm, 170 cm, 166.5 cm, 157.2 cm. But in reality, no one is truly taller. Some of us come from China, some from Indonesia, and some were born in Canada, yet all grew up under the same expectations of Chinese families. In Toronto and Markham, we learned how to switch between languages, survive across cultures, and maintain a balance between dreams and responsibilities.
 <br></br>
