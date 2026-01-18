@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* 1. DEFINE YOUR WARM THEME VARIABLES */
-  --background: #fffbf5;   /* Warm Cream */
-  --surface: #ffffff;      /* White */
-  --foreground: #4a3f35;   /* Dark Brown */
+  /* THEME VARIABLES */
+  --background: #fffbf5;   
+  --surface: #ffffff;      
+  --foreground: #4a3f35;   
   
-  /* Brand Colors (Warm Orange) */
+  /* Brand Colors */
   --primary: #ff8c42;
   --primary-light: #ffb366;
   --primary-dark: #e67a33;
   
-  /* Secondary (Soft Yellow) */
+  /* Secondary */
   --secondary: #ffd966;
   --secondary-light: #ffe699;
   --secondary-dark: #f4c542;
@@ -20,7 +20,7 @@
   --accent: #ffab73;
   --accent-light: #ffc799;
   
-  /* Neutrals (Beige/Taupe) */
+  /* Neutrals */
   --neutral: #f5f0e8;
   --neutral-dark: #d9cfc2;
   
@@ -43,7 +43,7 @@
   --shadow-lg: 0 10px 15px -3px rgba(255, 140, 66, 0.1), 0 4px 6px -4px rgba(255, 140, 66, 0.05);
 }
 
-/* 2. MAP VARIABLES TO TAILWIND UTILITIES (Optional but helpful) */
+/* MAP VARIABLES TO TAILWIND UTILITIES */
 @theme {
   --color-primary: var(--primary);
   --color-primary-dark: var(--primary-dark);
@@ -53,26 +53,26 @@
   --color-background: var(--background);
 }
 
-/* 3. BASE STYLES */
+/* BASE STYLES */
 body {
   background-color: var(--background);
   color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* 4. COMPONENT CLASSES */
+/* COMPONENT CLASSES */
 @layer components {
-  /* Primary Button (Orange) */
+  /* Primary Button */
   .btn-primary {
     @apply bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white font-medium py-2 px-4 rounded-xl transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center gap-2 justify-center;
   }
   
-  /* Secondary Button (Yellow/Beige) */
+  /* Secondary Button */
   .btn-secondary {
     @apply bg-[var(--secondary)] hover:bg-[var(--secondary-dark)] text-[var(--text-primary)] font-medium py-2 px-4 rounded-xl transition-all cursor-pointer;
   }
 
-  /* Outline Button (Clean) */
+  /* Outline Button */
   .btn-outline {
     @apply border border-[var(--border)] hover:bg-[var(--neutral)] text-[var(--text-primary)] font-medium py-2 px-4 rounded-xl transition-all cursor-pointer flex items-center gap-2;
   }

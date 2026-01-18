@@ -150,7 +150,6 @@ We know what it means to have no way out. We know that bank account numbers are 
             </div>
           </div>
 
-          {/* Back to Chat CTA */}
           <div className="mt-8 text-center">
             <button
               onClick={() => router.push('/')}

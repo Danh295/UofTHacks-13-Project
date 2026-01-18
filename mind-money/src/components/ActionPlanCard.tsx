@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link'; // Import Link
+import Link from 'next/link';
 import { CheckCircle2, Target, Clock, AlertCircle, ArrowRight, LayoutDashboard } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -36,6 +36,7 @@ export function ActionPlanCard({ data }: { data: ActionPlanData }) {
       </div>
 
       <div className="p-5 space-y-6">
+
         {/* SECTION 1: QUICK WINS */}
         {data.quick_wins && data.quick_wins.length > 0 && (
           <div className="space-y-3">
@@ -85,7 +86,7 @@ export function ActionPlanCard({ data }: { data: ActionPlanData }) {
           </div>
         )}
 
-        {/* SECTION 3: DASHBOARD LINK (Restored) */}
+        {/* SECTION 3: DASHBOARD LINK */}
         <div className="pt-2 border-t border-[var(--border)] mt-4">
            <Link href="/dashboard" className="block w-full group"> 
             <button className="w-full py-3 bg-[var(--neutral)] hover:bg-[var(--border)] text-[var(--text-primary)] font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2">

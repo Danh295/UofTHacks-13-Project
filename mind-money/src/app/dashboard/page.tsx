@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useFinancial } from '@/context/FinancialContext';
 import { ActionItem } from '@/components/ActionItem';
-import { PieChart, ListTodo, Save, Loader2, ArrowLeft, Target, Sparkles, LogIn, LogOut, Users, DollarSign, CreditCard, Wallet, TrendingUp } from 'lucide-react';
+import { PieChart, ListTodo, Save, ArrowLeft, Target, Sparkles, LogIn, LogOut, Users, DollarSign, CreditCard, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
-import { useAuth } from '@/context/AuthContext'; // Note: singular context
+import { useAuth } from '@/context/AuthContext';
 import AuthModal from '@/components/AuthModal';
 
 export default function DashboardPage() {
@@ -48,6 +48,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
             {/* Title Section */}
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -59,6 +60,7 @@ export default function DashboardPage() {
             
             {/* Controls Section */}
             <div className="flex items-center gap-6">
+
               {/* Tab Switcher */}
               <div className="flex p-1 bg-[var(--neutral)] rounded-xl border border-[var(--border)]">
                 <button 
@@ -99,6 +101,7 @@ export default function DashboardPage() {
 
       <div className="flex-1 p-8 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
+
           {/* TAB 1: ACTION CENTER */}
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4">

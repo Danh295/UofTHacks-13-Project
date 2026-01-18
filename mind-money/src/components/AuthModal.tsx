@@ -65,13 +65,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
+      
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       
-      {/* Modal - Using Warm Theme Variables */}
+      {/* Modal */}
       <div className="relative bg-[var(--surface)] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-[var(--border)] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
@@ -91,6 +92,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 bg-white">
+          
           {/* Error Message */}
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm">
@@ -106,7 +108,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
             </div>
           )}
 
-          {/* Display Name (signup only) */}
+          {/* Display Name */}
           {mode === 'signup' && (
             <div>
               <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
@@ -143,7 +145,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
             </div>
           </div>
 
-          {/* Password (not for reset) */}
+          {/* Password */}
           {mode !== 'reset' && (
             <div>
               <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
@@ -164,7 +166,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
             </div>
           )}
 
-          {/* Submit Button - Uses 'btn-primary' from globals.css */}
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -188,7 +190,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                 </div>
               </div>
 
-              {/* Google Sign In - Uses 'btn-outline' style */}
+              {/* Google Sign In */}
               <button
                 type="button"
                 onClick={handleGoogleSignIn}

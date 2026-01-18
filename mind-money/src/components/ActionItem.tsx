@@ -4,7 +4,7 @@ import React from 'react';
 import { CheckCircle2, Circle, Clock, ArrowRight } from 'lucide-react';
 import clsx from 'clsx';
 
-// Define the shape of an Action Item (matches your FinancialContext)
+// Define the shape of an Action Item
 interface ActionItemProps {
   item: {
     id: string;
@@ -83,7 +83,7 @@ export function ActionItem({ item, onToggle }: ActionItemProps) {
         </div>
       </div>
 
-      {/* Hover Arrow (Only if not completed) */}
+      {/* Hover Arrow */}
       {!item.isCompleted && (
         <div className="self-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0">
           <ArrowRight size={18} className="text-[var(--primary)]" />
