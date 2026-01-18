@@ -3,14 +3,14 @@
 import React, { useState } from 'react';
 import { useFinancial } from '@/context/FinancialContext';
 import { ActionItem } from '@/components/ActionItem';
-import { PieChart, ListTodo, Save, Loader2, ArrowLeft, Target, Sparkles, LogIn, LogOut, Users } from 'lucide-react';
+import { PieChart, ListTodo, Save, Loader2, ArrowLeft, Target, Sparkles, LogIn, LogOut, Users, DollarSign, CreditCard, Wallet, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext'; // Note: singular context
 import AuthModal from '@/components/AuthModal';
 
 export default function DashboardPage() {
-  const { actions, toggleAction, financialFormSchema } = useFinancial();
+  const { actions, toggleAction } = useFinancial();
   const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'form'>('overview');
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -85,9 +85,9 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              {/* Separate Round Button for Our Story */}
+              {/* About Button */}
               <Link href="/our-story" title="About Our Team">
-                 <button className="w-30 h-10 rounded-full text-sm gap-2 bg-white border border-[var(--border)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:shadow-md flex items-center justify-center transition-all text-[var(--text-secondary)]">
+                 <button className="h-10 px-4 rounded-full text-sm gap-2 bg-white border border-[var(--border)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:shadow-md flex items-center justify-center transition-all text-[var(--text-secondary)] font-medium">
                     <Users size={16} />
                     About
                  </button>
@@ -126,7 +126,7 @@ export default function DashboardPage() {
                    <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-[var(--border)]">
                      <ListTodo className="w-12 h-12 text-[var(--text-light)] mx-auto mb-3" />
                      <p className="text-[var(--text-secondary)]">No actions generated yet.</p>
-                     <p className="text-xs text-[var(--text-light)] mt-1">Chat with MoneyBird to build your plan.</p>
+                     <p className="text-xs text-[var(--text-light)] mt-1">Chat with MindMoney to build your plan.</p>
                    </div>
                  ) : (
                    sortedActions.map(action => <ActionItem key={action.id} item={action} onToggle={toggleAction} />)
@@ -135,50 +135,82 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: DYNAMIC FINANCIAL FORM */}
+          {/* TAB 2: STATIC FINANCIAL FORM (FIXED) */}
           {activeTab === 'form' && (
             <div className="card p-8 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4">
-              {!financialFormSchema ? (
-                 <div className="text-center py-16">
-                   <Loader2 className="w-12 h-12 text-[var(--primary)]/30 animate-spin mx-auto mb-4" />
-                   <p className="text-[var(--text-secondary)]">No form schema available yet.</p>
-                   <p className="text-xs text-[var(--text-light)] mt-1">Chat with MoneyBird to generate your intake form.</p>
-                 </div>
-              ) : (
-                <form className="space-y-8">
-                  <div className="border-b border-[var(--border)] pb-6">
-                    <h2 className="text-2xl font-bold text-[var(--text-primary)]">{financialFormSchema.title}</h2>
-                    <p className="text-[var(--text-secondary)]">{financialFormSchema.description}</p>
-                  </div>
-                  {Object.entries(financialFormSchema).map(([key, section]: [string, any]) => {
-                    if (key === 'title' || key === 'description') return null;
-                    return (
-                      <div key={key} className="space-y-4">
-                        <h3 className="text-lg font-bold text-[var(--primary-dark)] border-l-4 border-[var(--primary)] pl-3">{section.title}</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {section.fields?.map((field: any, idx: number) => (
-                            <div key={idx} className={field.type === 'text' || field.type === 'select' ? "md:col-span-2" : ""}>
-                              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">{field.label} {field.required && <span className="text-[var(--danger)]">*</span>}</label>
-                              {field.type === 'select' ? (
-                                <select className="w-full p-3 bg-[var(--neutral)] border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none transition text-[var(--text-primary)]">
-                                  {field.options.map((opt: string) => <option key={opt}>{opt}</option>)}
-                                </select>
-                              ) : (
-                                <input type={field.type} placeholder={field.placeholder} className="w-full p-3 bg-[var(--neutral)] border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none transition text-[var(--text-primary)]" />
-                              )}
-                            </div>
-                          ))}
-                        </div>
+               <div className="border-b border-[var(--border)] pb-6 mb-8">
+                 <h2 className="text-2xl font-bold text-[var(--text-primary)]">Your Financial Profile</h2>
+                 <p className="text-[var(--text-secondary)]">Update your details to get more accurate AI advice.</p>
+               </div>
+
+               <form className="space-y-8" onSubmit={(e) => { e.preventDefault(); alert("Profile saved!"); }}>
+                  
+                  {/* Section 1: Income */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-[var(--primary-dark)] flex items-center gap-2">
+                      <div className="p-2 bg-[var(--neutral)] rounded-lg text-[var(--primary)]"><DollarSign size={18} /></div>
+                      Income Sources
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Monthly Net Income</label>
+                        <input type="number" placeholder="e.g. 4500" className="w-full p-3 bg-[var(--neutral)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] outline-none transition text-[var(--text-primary)]" />
                       </div>
-                    );
-                  })}
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Employment Status</label>
+                        <select className="w-full p-3 bg-[var(--neutral)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] outline-none transition text-[var(--text-primary)]">
+                           <option>Full-time</option>
+                           <option>Part-time</option>
+                           <option>Freelance</option>
+                           <option>Student</option>
+                           <option>Unemployed</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 2: Expenses */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-[var(--primary-dark)] flex items-center gap-2">
+                      <div className="p-2 bg-[var(--neutral)] rounded-lg text-[var(--primary)]"><CreditCard size={18} /></div>
+                      Major Expenses
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Rent / Mortgage</label>
+                        <input type="number" placeholder="e.g. 1800" className="w-full p-3 bg-[var(--neutral)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] outline-none transition text-[var(--text-primary)]" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Groceries & Utilities</label>
+                        <input type="number" placeholder="e.g. 600" className="w-full p-3 bg-[var(--neutral)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] outline-none transition text-[var(--text-primary)]" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 3: Debts */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-[var(--primary-dark)] flex items-center gap-2">
+                      <div className="p-2 bg-[var(--neutral)] rounded-lg text-[var(--primary)]"><TrendingUp size={18} /></div>
+                      Debts & Assets
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Total Savings</label>
+                        <input type="number" placeholder="e.g. 5000" className="w-full p-3 bg-[var(--neutral)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] outline-none transition text-[var(--text-primary)]" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Total Debt (Credit Cards/Loans)</label>
+                        <input type="number" placeholder="e.g. 1200" className="w-full p-3 bg-[var(--neutral)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--primary)] outline-none transition text-[var(--text-primary)]" />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="pt-6 border-t border-[var(--border)]">
-                    <button type="button" className="w-full btn-primary flex items-center justify-center gap-2">
+                    <button type="submit" className="w-full btn-primary flex items-center justify-center gap-2">
                       <Save size={20} /> Save Financial Profile
                     </button>
                   </div>
-                </form>
-              )}
+               </form>
             </div>
           )}
         </div>
