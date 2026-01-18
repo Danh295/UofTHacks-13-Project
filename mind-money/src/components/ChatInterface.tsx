@@ -222,9 +222,9 @@ export default function ChatInterface() {
               <History size={20} />
             </button>
             <div className="flex items-center gap-3">
-              <div className="relative w-8 h-8">
+              <div className="relative w-8 h-8 border border-[var(--border)] rounded-lg overflow-hidden">
                 <Image
-                  src="/images/logo.png"
+                  src="/images/logobird.png"
                   alt="MoneyBird Logo"
                   fill
                   className="object-contain"

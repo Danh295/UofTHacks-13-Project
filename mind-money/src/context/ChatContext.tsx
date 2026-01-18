@@ -40,7 +40,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     return 'demo-session';
   });
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    { id: '1', role: 'assistant', content: 'Hello. I am MoneyBird. I am here to optimize your financial life. How can I help you today?' }
+  ]);
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([]);
   const [isThinking, setIsThinking] = useState(false);
 
