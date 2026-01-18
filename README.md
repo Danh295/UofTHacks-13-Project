@@ -31,3 +31,5 @@ We learned that good AI systems are as much about orchestration and safety as th
 ## What's next for MoneyBird
 
 Next, we want to improve personalization, integrate user authentication, and expand long-term progress tracking. We also plan to refine safety features, improve financial education prompts, and explore partnerships that could make MoneyBird accessible to more students and young professionals.
+
+- Danny, Jerry, Yuhan and Catherine.
