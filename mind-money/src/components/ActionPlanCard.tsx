@@ -120,13 +120,21 @@ export function ActionPlanCard({ data }: { data: ActionPlanData }) {
         )}
 
         {/* SECTION 3: CTA TO DASHBOARD */}
-        <div className="pt-2">
+        <div className="pt-2 space-y-3">
            <Link href="/dashboard" className="block w-full group"> 
             <button className="w-full py-4 bg-gradient-to-r from-[var(--secondary-light)] to-[var(--neutral)] hover:from-[var(--secondary)] hover:to-[var(--secondary-light)] text-[var(--primary-dark)] font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 border border-[var(--border)] hover:border-[var(--primary)] hover:shadow-lg hover:shadow-[var(--shadow-md)]">
               Open Full Financial Dashboard 
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </Link>
+          
+          <Link href="/our-story" className="block w-full group">
+            <button className="w-full py-3 bg-white hover:bg-[var(--neutral)] text-[var(--text-primary)] font-semibold text-sm rounded-xl transition-all flex items-center justify-center gap-2 border border-[var(--border)] hover:border-[var(--accent)] hover:shadow-md">
+              Learn About Our Team
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </Link>
+          
           <p className="text-center text-[10px] text-[var(--text-light)] mt-3 flex items-center justify-center gap-1.5">
             <AlertCircle size={10} />
             Data automatically saved to your dashboard
