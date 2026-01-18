@@ -1,22 +1,14 @@
-<<<<<<< HEAD
-from fastapi import FastAPI, HTTPException
-=======
 """
 main.py - The API Entrypoint with Supabase Session & Auth Management
 """
 import asyncio
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Header, Depends
->>>>>>> feature/auth
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from schemas import ChatRequest, ChatResponse
 from workflow import run_mindmoney_workflow
-<<<<<<< HEAD
-from supabase_logger import get_supabase_logger
-=======
 from supabase_logger import get_supabase_service
->>>>>>> feature/auth
 import uvicorn
 import uuid
 
@@ -30,56 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-<<<<<<< HEAD
-# --- 1. NEW: Get All Sessions ---
-@app.get("/api/sessions")
-async def get_sessions():
-    """Get all chat sessions with preview."""
-    logger = get_supabase_logger()
-    try:
-        sessions = await logger.get_all_sessions(limit=50)
-        return {"sessions": sessions}
-    except Exception as e:
-        print(f"❌ Sessions Error: {e}")
-        return {"sessions": []}
-
-# --- 2. NEW: History Endpoint (Restores Chat) ---
-@app.get("/api/history/{session_id}")
-async def get_history(session_id: str):
-    logger = get_supabase_logger()
-    try:
-        # Fetch last 50 turns from Supabase
-        history = await logger.get_session_history(session_id)
-        
-        # Format for Frontend
-        formatted_history = []
-        for turn in history:
-            # Add User Message
-            formatted_history.append({
-                "id": f"{turn['id']}-user",
-                "role": "user",
-                "content": turn['user_message']
-            })
-            # Add AI Response
-            formatted_history.append({
-                "id": f"{turn['id']}-ai",
-                "role": "assistant",
-                "content": turn['assistant_response']
-            })
-            
-        return {"history": formatted_history}
-    except Exception as e:
-        print(f"❌ History Error: {e}")
-        return {"history": []}
-
-# --- 3. UPDATED: Chat Endpoint (Saves to DB) ---
-@app.post("/api/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
-    print(f"📥 Received: {request.message} (Session: {request.session_id})")
-    
-    try:
-        # 1. Run the AI Workflow
-=======
 
 # ============================================================================
 # AUTH HELPERS
@@ -157,7 +99,6 @@ async def chat_endpoint(
             turn_number = session_context["turn_count"] + 1
         
         # Run the LangGraph workflow
->>>>>>> feature/auth
         result_state = await run_mindmoney_workflow(
             user_input=request.message,
             history=conversation_history
