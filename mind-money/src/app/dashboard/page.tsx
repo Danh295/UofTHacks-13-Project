@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useFinancial } from '@/context/FinancialContext';
 import { ActionItem } from '@/components/ActionItem';
-import { PieChart, ListTodo, Save, Loader2, MessageSquare } from 'lucide-react';
+import { PieChart, ListTodo, Save, Loader2, MessageSquare, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
@@ -48,6 +48,12 @@ export default function DashboardPage() {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'form' ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white' : 'bg-[var(--neutral)] text-[var(--text-primary)]'}`}
             >
               <PieChart size={16} /> Financial Profile
+            </button>
+            <button 
+              onClick={() => router.push('/our-story')}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 bg-[var(--neutral)] text-[var(--text-primary)] hover:bg-[var(--neutral-dark)]"
+            >
+              <Users size={16} /> Our Story
             </button>
           </div>
         </div>
