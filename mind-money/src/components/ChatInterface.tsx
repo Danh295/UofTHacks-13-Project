@@ -36,8 +36,9 @@ type ChatSession = {
 export default function ChatInterface() {
   // --- FIX 1: Removed duplicate declaration ---
   const { addActionPlan } = useFinancial(); 
+  const { messages, addMessage, setMessages, isThinking, setIsThinking, sessionId: contextSessionId, agentLogs: contextAgentLogs, setAgentLogs: setContextAgentLogs } = useChat();
   const router = useRouter();
-  const [sessionId, setSessionId] = useState(`session-${Date.now()}`);
+  const [sessionId, setSessionId] = useState(contextSessionId);
   const [input, setInput] = useState('');
   const [showAgentPanel, setShowAgentPanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
