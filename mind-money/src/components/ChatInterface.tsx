@@ -7,6 +7,8 @@ import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import { ActionPlanCard } from './ActionPlanCard';
 import { useRouter } from 'next/navigation';
+import { useFinancial } from '@/context/FinancialContext'; 
+import { useChat } from '@/context/ChatContext'; 
 
 // Types
 type AgentLog = {
@@ -23,15 +25,12 @@ type Message = {
   content: string;
   actionPlan?: any;
 };
-import { useFinancial } from '@/context/FinancialContext'; 
-import { useChat } from '@/context/ChatContext'; // <--- USE GLOBAL CONTEXT
 
 export default function ChatInterface() {
-  const { addActionPlan } = useFinancial(); // Connection to the Dashboard
+  // --- FIX 1: Removed duplicate declaration ---
+  const { addActionPlan } = useFinancial(); 
   const router = useRouter();
-  const { addActionPlan } = useFinancial();
   
-  // USE GLOBAL STATE (Fixes the reset bug)
   const { 
     messages, 
     addMessage, 
@@ -39,7 +38,7 @@ export default function ChatInterface() {
     setAgentLogs, 
     isThinking, 
     setIsThinking, 
-    sessionId // <--- The persistent ID
+    sessionId 
   } = useChat();
 
   const [input, setInput] = useState('');
@@ -57,7 +56,6 @@ export default function ChatInterface() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // 1. Add User Message to Context
     const userMsg = { id: Date.now().toString(), role: 'user' as const, content: input };
     addMessage(userMsg);
     setInput('');
@@ -65,20 +63,18 @@ export default function ChatInterface() {
     setAgentLogs([]); 
 
     try {
-      // 2. Call API with Persistent Session ID
       const res = await fetch('http://127.0.0.1:8000/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMsg.content,
           history: messages.map(m => ({ role: m.role, content: m.content })),
-          session_id: sessionId // <--- CRITICAL: Sends the correct ID to Supabase
+          session_id: sessionId 
         })
       });
 
       const data = await res.json();
 
-      // 3. Agent Log Animation
       if (data.agent_logs) {
         data.agent_logs.forEach((log: any, index: number) => {
           setTimeout(() => {
@@ -93,18 +89,15 @@ export default function ChatInterface() {
         });
       }
 
-      // 4. Final Response
       const delay = (data.agent_logs?.length || 0) * 400 + 500;
       
       setTimeout(() => {
         setIsThinking(false);
         
-        // Save Action Plan to Dashboard
         if (data.action_plan && Object.keys(data.action_plan).length > 0) {
             addActionPlan(data.action_plan);
         }
 
-        // Add Assistant Message to Context
         addMessage({
           id: Date.now().toString(),
           role: 'assistant',
@@ -131,7 +124,8 @@ export default function ChatInterface() {
       <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full bg-white shadow-xl h-full relative">
         
         {/* Header */}
-        <header className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10 pt-20">
+        {/* FIX 2: Removed 'pt-20' since the floating nav is gone */}
+        <header className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
           <div className="flex items-center gap-3">
             <div className="bg-indigo-600 p-2 rounded-lg">
               <Sparkles className="text-white w-5 h-5" />
@@ -144,7 +138,7 @@ export default function ChatInterface() {
           <div className="flex gap-2">
             <button
               onClick={() => router.push('/dashboard')}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white hover:bg-emerald-700"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
             >
               <LayoutDashboard size={16} />
               Dashboard
@@ -168,7 +162,6 @@ export default function ChatInterface() {
           {messages.map((msg) => (
             <div key={msg.id} className={clsx("flex gap-4 max-w-3xl mx-auto", msg.role === 'user' ? "flex-row-reverse" : "")}>
               
-              {/* Avatar */}
               <div className={clsx(
                 "w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm",
                 msg.role === 'assistant' ? "bg-white border border-indigo-100" : "bg-indigo-600"
@@ -177,7 +170,6 @@ export default function ChatInterface() {
               </div>
 
               <div className="flex-1 space-y-4">
-                {/* Message Bubble */}
                 <div className={clsx(
                   "p-6 rounded-2xl shadow-sm text-sm leading-relaxed prose prose-slate max-w-none",
                   msg.role === 'assistant' 
@@ -189,7 +181,6 @@ export default function ChatInterface() {
                   </ReactMarkdown>
                 </div>
 
-                {/* DYNAMIC ACTION PLAN WIDGET */}
                 {msg.actionPlan && Object.keys(msg.actionPlan).length > 0 && (
                   <ActionPlanCard data={msg.actionPlan} />
                 )}
@@ -238,7 +229,8 @@ export default function ChatInterface() {
         "fixed inset-y-0 right-0 w-80 bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-slate-800 z-50",
         showAgentPanel ? "translate-x-0" : "translate-x-full"
       )}>
-        <div className="p-4 border-b border-slate-800 bg-slate-950 flex justify-between items-center pt-20">
+        {/* FIX 3: Adjusted padding here too */}
+        <div className="p-4 border-b border-slate-800 bg-slate-950 flex justify-between items-center">
           <h3 className="text-indigo-400 font-mono text-xs font-bold uppercase tracking-wider">
             Orchestration Log
           </h3>
@@ -247,7 +239,7 @@ export default function ChatInterface() {
           </button>
         </div>
         
-        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-100px)]">
+        <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-60px)]">
           {agentLogs.map((log, i) => (
             <div key={i} className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 text-xs animate-in fade-in slide-in-from-right-8">
               <div className="flex items-center gap-2 mb-2">
