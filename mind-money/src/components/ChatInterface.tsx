@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, BrainCircuit, X, Sparkles } from 'lucide-react';
+import { Send, Bot, User, BrainCircuit, X, Sparkles, LayoutDashboard } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import { ActionPlanCard } from './ActionPlanCard';
 import { useFinancial } from '@/context/FinancialContext'; // Import context
+import { useRouter } from 'next/navigation';
 
 // Types
 type AgentLog = {
@@ -26,6 +27,7 @@ type Message = {
 
 export default function ChatInterface() {
   const { addActionPlan } = useFinancial(); // Connection to the Dashboard
+  const router = useRouter();
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     { 
@@ -133,17 +135,26 @@ export default function ChatInterface() {
               <p className="text-xs text-slate-500">Orchestrated Financial Intelligence</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowAgentPanel(!showAgentPanel)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              showAgentPanel 
-                ? "bg-slate-900 text-white" 
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            <BrainCircuit size={16} />
-            {showAgentPanel ? "Hide Brain" : "View Brain"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white hover:bg-emerald-700"
+            >
+              <LayoutDashboard size={16} />
+              Dashboard
+            </button>
+            <button
+              onClick={() => setShowAgentPanel(!showAgentPanel)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                showAgentPanel 
+                  ? "bg-slate-900 text-white" 
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              <BrainCircuit size={16} />
+              {showAgentPanel ? "Hide Brain" : "View Brain"}
+            </button>
+          </div>
         </header>
 
         {/* Messages */}
