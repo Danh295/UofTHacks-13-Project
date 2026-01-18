@@ -115,12 +115,21 @@ async def chat_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 # --- 3. SESSION MANAGEMENT (Optional/Advanced) ---
+# main.py
+
 @app.get("/api/sessions")
 async def list_sessions():
-    """Placeholder for session listing."""
-    # Logic: Query 'sessions' table distinct by session_id
-    # For now return empty or implement in supabase_logger if needed
-    return {"sessions": []}
+    logger = get_supabase_logger()
+    try:
+        # Fetch from the 'sessions' table or 'session_summaries' view 
+        # created in your SQL script
+        sessions_data = await logger.get_recent_sessions() 
+        
+        # Ensure the keys match what the frontend 'ChatSession' type expects
+        return {"sessions": sessions_data}
+    except Exception as e:
+        print(f"❌ Sessions Error: {e}")
+        return {"sessions": []}
 
 @app.get("/health")
 async def health_check():
