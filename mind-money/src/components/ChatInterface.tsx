@@ -204,7 +204,7 @@ export default function ChatInterface() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* INPUT AREA */}
+        {/* INPUT AREA - SLIM & MODERN */}
         <div className="p-4 bg-white border-t border-[var(--border)]">
           <div className="max-w-3xl mx-auto relative flex items-center gap-2">
             <div className="relative flex-1 group">
@@ -214,8 +214,7 @@ export default function ChatInterface() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Type your message..."
-                // FIXED: focus:outline-none to remove blue ring, focus:ring-[var(--primary)]/20 for warm glow
-                className="w-full bg-[var(--neutral)] text-[var(--text-primary)] placeholder:text-[var(--text-light)]/70 border-0 rounded-full pl-5 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:bg-white transition-all shadow-sm group-hover:bg-[var(--neutral-dark)]/30 focus:group-hover:bg-white"
+                className="w-full bg-[var(--neutral)] text-[var(--text-primary)] placeholder:text-[var(--text-light)]/70 border-0 rounded-full pl-5 pr-12 py-3 text-sm focus:ring-2 focus:ring-[var(--primary)]/10 focus:bg-white transition-all shadow-sm group-hover:bg-[var(--neutral-dark)]/30 focus:group-hover:bg-white"
               />
               <button 
                 onClick={handleSend}
