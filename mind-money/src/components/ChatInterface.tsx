@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, BrainCircuit, X, Sparkles, LayoutDashboard, History } from 'lucide-react';
+import { Send, Bot, User, BrainCircuit, X, Sparkles, LayoutDashboard, History, LogIn, LogOut } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
@@ -9,6 +9,8 @@ import { ActionPlanCard } from './ActionPlanCard';
 import { useRouter } from 'next/navigation';
 import { useFinancial } from '@/context/FinancialContext'; 
 import { useChat } from '@/context/ChatContext'; 
+import AuthModal from './AuthModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Types
 type AgentLog = {
@@ -36,11 +38,15 @@ type ChatSession = {
 export default function ChatInterface() {
   const { addActionPlan } = useFinancial(); 
   const { messages, addMessage, setMessages, isThinking, setIsThinking } = useChat();
+  const { user, signOut } = useAuth();
   const router = useRouter();
+  
   const [sessionId, setSessionId] = useState(`session-${Date.now()}`);
   const [input, setInput] = useState('');
   const [showAgentPanel, setShowAgentPanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([]);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
@@ -56,23 +62,24 @@ export default function ChatInterface() {
 
   // Fetch chat sessions when history panel is opened
   useEffect(() => {
-    if (showHistoryPanel && chatSessions.length === 0) {
+    const fetchChatSessions = async () => {
+      if (!user) return; // Don't fetch if not logged in
+      setIsLoadingSessions(true);
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/sessions');
+        const data = await res.json();
+        setChatSessions(data.sessions || []);
+      } catch (err) {
+        console.error('Failed to fetch sessions:', err);
+      } finally {
+        setIsLoadingSessions(false);
+      }
+    };
+
+    if (showHistoryPanel) {
       fetchChatSessions();
     }
-  }, [showHistoryPanel]);
-
-  const fetchChatSessions = async () => {
-    setIsLoadingSessions(true);
-    try {
-      const res = await fetch('http://127.0.0.1:8000/api/sessions');
-      const data = await res.json();
-      setChatSessions(data.sessions || []);
-    } catch (err) {
-      console.error('Failed to fetch sessions:', err);
-    } finally {
-      setIsLoadingSessions(false);
-    }
-  };
+  }, [showHistoryPanel, user]);
 
   const loadChatHistory = async (selectedSessionId: string) => {
     try {
@@ -168,12 +175,14 @@ export default function ChatInterface() {
   return (
     <div className="flex h-screen bg-[var(--background)] overflow-hidden relative">
       
+      {/* AUTH MODAL */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+
       {/* MAIN CHAT AREA */}
       <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full bg-white shadow-xl h-full relative">
         
-        {/* Header */}
-        {/* FIX 2: Removed 'pt-20' since the floating nav is gone */}
-        <header className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
+        {/* HEADER */}
+        <header className="px-6 py-4 border-b border-[var(--border)] flex justify-between items-center bg-white z-10">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowHistoryPanel(!showHistoryPanel)}
@@ -189,40 +198,57 @@ export default function ChatInterface() {
               <p className="text-xs text-[var(--text-secondary)]">Orchestrated Financial Intelligence</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          
+          <div className="flex items-center gap-3">
             <button
               onClick={() => router.push('/dashboard')}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white hover:shadow-md"
             >
               <LayoutDashboard size={16} />
-              Dashboard
+              <span className="hidden sm:inline">Dashboard</span>
             </button>
+
             <button
               onClick={() => setShowAgentPanel(!showAgentPanel)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 showAgentPanel 
                   ? "bg-[var(--primary-dark)] text-white" 
                   : "bg-[var(--neutral)] text-[var(--text-primary)] hover:bg-[var(--neutral-dark)]"
               }`}
             >
-              <BrainCircuit size={16} />
-              {showAgentPanel ? "Hide Brain" : "View Brain"}
+              <BrainCircuit size={18} />
             </button>
+
+            {user ? (
+              <button 
+                onClick={() => signOut()}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] hover:bg-red-50 text-[var(--text-secondary)] hover:text-red-600 transition-all"
+                title="Sign Out"
+              >
+                <LogOut size={16} />
+              </button>
+            ) : (
+              <button 
+                onClick={() => setShowAuthModal(true)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] hover:bg-[var(--neutral)] text-[var(--text-primary)] transition-all"
+              >
+                <LogIn size={16} />
+                <span className="hidden sm:inline">Sign In</span>
+              </button>
+            )}
           </div>
         </header>
 
-        {/* Messages */}
+        {/* MESSAGES LIST */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-gradient-to-b from-[var(--background)] to-[var(--neutral)]">
           {messages.map((msg: Message) => (
             <div key={msg.id} className={clsx("flex gap-4 max-w-3xl mx-auto", msg.role === 'user' ? "flex-row-reverse" : "")}>
-              
               <div className={clsx(
                 "w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm",
                 msg.role === 'assistant' ? "bg-white border border-[var(--border)]" : "bg-gradient-to-br from-[var(--primary)] to-[var(--accent)]"
               )}>
                 {msg.role === 'assistant' ? <Bot size={20} className="text-[var(--primary)]" /> : <User size={20} className="text-white" />}
               </div>
-
               <div className="flex-1 space-y-4">
                 <div className={clsx(
                   "p-6 rounded-2xl shadow-sm text-sm leading-relaxed prose prose-slate max-w-none",
@@ -230,18 +256,14 @@ export default function ChatInterface() {
                     ? "bg-white border border-[var(--border)] text-[var(--text-primary)]" 
                     : "bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] text-white prose-invert"
                 )}>
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {msg.content}
-                  </ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                 </div>
-
                 {msg.actionPlan && Object.keys(msg.actionPlan).length > 0 && (
                   <ActionPlanCard data={msg.actionPlan} />
                 )}
               </div>
             </div>
           ))}
-          
           {isThinking && (
              <div className="max-w-3xl mx-auto flex gap-4">
                <div className="w-10 h-10 rounded-full bg-white border border-[var(--border)] flex items-center justify-center animate-pulse">
@@ -256,7 +278,7 @@ export default function ChatInterface() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
+        {/* INPUT AREA */}
         <div className="p-6 bg-white border-t border-slate-100">
           <div className="max-w-3xl mx-auto relative">
             <input
@@ -293,69 +315,60 @@ export default function ChatInterface() {
         </div>
         
         <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-120px)]">
-          {/* New Chat Button */}
-          <button
-            onClick={startNewChat}
-            className="w-full bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] hover:shadow-md text-white rounded-lg p-3 text-sm font-medium transition-all flex items-center justify-center gap-2"
-          >
-            <Sparkles size={16} />
-            Start New Chat
-          </button>
-
-          {/* Loading State */}
-          {isLoadingSessions && (
-            <div className="text-center text-slate-400 text-sm py-4">
-              Loading sessions...
-            </div>
-          )}
-
-          {/* Chat Sessions */}
-          {!isLoadingSessions && chatSessions.length === 0 && (
-            <div className="text-center text-slate-400 text-xs mt-10">
-              No chat history yet.<br/>Start a conversation to see it here.
-            </div>
-          )}
-
-          {chatSessions.map((session, index) => {
-            const date = new Date(session.last_message_at);
-            const isToday = date.toDateString() === new Date().toDateString();
-            const isYesterday = date.toDateString() === new Date(Date.now() - 86400000).toDateString();
-            
-            let timeLabel = '';
-            if (isToday) {
-              timeLabel = 'Today';
-            } else if (isYesterday) {
-              timeLabel = 'Yesterday';
-            } else {
-              timeLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            }
-
-            return (
-              <div
-                key={session.session_id}
-                onClick={() => loadChatHistory(session.session_id)}
-                className={clsx(
-                  "bg-[var(--neutral)] rounded-lg p-3 border border-[var(--border)] hover:bg-[var(--neutral-dark)] cursor-pointer transition-colors",
-                  session.session_id === sessionId && "bg-[var(--secondary-light)] border-[var(--primary)]"
-                )}
+          {user ? (
+            <>
+              <button
+                onClick={startNewChat}
+                className="w-full bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] hover:shadow-md text-white rounded-lg p-3 text-sm font-medium transition-all flex items-center justify-center gap-2"
               >
-                <div className="flex items-center gap-2 mb-1">
-                  {index === 0 && <div className="w-2 h-2 rounded-full bg-[var(--success)]" />}
-                  <span className="font-semibold text-sm text-[var(--text-primary)]">{timeLabel}</span>
+                <Sparkles size={16} />
+                Start New Chat
+              </button>
+              {!isLoadingSessions && chatSessions.length === 0 && (
+                <div className="text-center text-slate-400 text-xs mt-10">
+                  No chat history yet.<br/>Start a conversation to see it here.
                 </div>
-                <p className="text-xs text-[var(--text-secondary)] line-clamp-2">
-                  {session.preview}
-                </p>
-                <span className="text-[10px] text-[var(--text-light)] mt-1 block">
-                  {date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                </span>
-              </div>
-            );
-          })}
+              )}
+              {chatSessions.map((session, index) => {
+                const date = new Date(session.last_message_at);
+                const isToday = date.toDateString() === new Date().toDateString();
+                const timeLabel = isToday ? 'Today' : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                return (
+                  <div
+                    key={session.session_id}
+                    onClick={() => loadChatHistory(session.session_id)}
+                    className={clsx(
+                      "bg-[var(--neutral)] rounded-lg p-3 border border-[var(--border)] hover:bg-[var(--neutral-dark)] cursor-pointer transition-colors",
+                      session.session_id === sessionId && "bg-[var(--secondary-light)] border-[var(--primary)]"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      {index === 0 && <div className="w-2 h-2 rounded-full bg-[var(--success)]" />}
+                      <span className="font-semibold text-sm text-[var(--text-primary)]">{timeLabel}</span>
+                    </div>
+                    <p className="text-xs text-[var(--text-secondary)] line-clamp-2">
+                      {session.preview}
+                    </p>
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <div className="text-center py-10 px-4">
+              <p className="text-sm text-[var(--text-secondary)] mb-4">Sign in to save your conversation history across devices.</p>
+              <button 
+                onClick={() => { setShowHistoryPanel(false); setShowAuthModal(true); }}
+                className="w-full bg-white border border-[var(--border)] text-[var(--primary)] py-2 rounded-lg text-sm font-medium hover:bg-[var(--neutral)] transition-colors"
+              >
+                Sign In / Register
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* RIGHT: AGENT NERVE CENTER (Collapsible) */}
+      {/* RIGHT: AGENT PANEL (Same as before) */}
       <div className={clsx(
         "fixed inset-y-0 right-0 w-80 bg-[var(--primary-dark)] shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-[var(--primary)] z-50",
         showAgentPanel ? "translate-x-0" : "translate-x-full"
