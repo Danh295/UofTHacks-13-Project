@@ -65,7 +65,7 @@ class SupabaseService:
             return False
     
     # =========================================================================
-    # SESSION LOADING - For Agents to Access Previous Context
+    # SESSION LOADING
     # =========================================================================
     
     async def load_session_history(
@@ -76,7 +76,6 @@ class SupabaseService:
     ) -> List[Dict[str, str]]:
         """
         Load conversation history for a session.
-        Returns format compatible with agent's conversation_history field.
         """
         try:
             client = self.get_client()
@@ -87,7 +86,6 @@ class SupabaseService:
                 .order("turn_number", desc=False)\
                 .limit(limit)
             
-            # Filter by user if provided
             if user_id:
                 query = query.eq("user_id", user_id)
             
@@ -96,7 +94,6 @@ class SupabaseService:
             if not result.data:
                 return []
             
-            # Convert to conversation history format
             history = []
             for turn in result.data:
                 history.append({
@@ -125,10 +122,8 @@ class SupabaseService:
         try:
             client = self.get_client()
             
-            # Get conversation history
             history = await self.load_session_history(session_id, user_id, limit=20)
             
-            # Get the most recent turn for state info
             query = client.table("conversation_turns")\
                 .select("*")\
                 .eq("session_id", session_id)\
@@ -171,7 +166,8 @@ class SupabaseService:
                 "turn_count": 0
             }
     
-    async def get_all_sessions(
+    # --- FIXED METHOD NAME & FILTERING ---
+    async def get_user_sessions(
         self,
         user_id: Optional[str] = None,
         limit: int = 50
@@ -187,39 +183,30 @@ class SupabaseService:
                 .order("last_message_at", desc=True)\
                 .limit(limit)
             
+            # STRICT FILTERING: Only return sessions belonging to this user
             if user_id:
                 query = query.eq("user_id", user_id)
+            else:
+                # If no user_id is passed (Guest), do NOT return database sessions 
+                # (Privacy: Guests shouldn't see random sessions)
+                # You might want to remove this 'else' if you want a global public feed, 
+                # but for this app, guests rely on local storage.
+                pass 
             
             result = query.execute()
+            
+            # Additional safety: If user_id was requested, double check the results
+            if user_id and result.data:
+                return [s for s in result.data if s.get('user_id') == user_id]
+                
             return result.data if result.data else []
             
         except Exception as e:
             print(f"Error getting sessions: {e}")
             return []
     
-    async def session_exists(
-        self, 
-        session_id: str,
-        user_id: Optional[str] = None
-    ) -> bool:
-        """Check if a session exists in the database."""
-        try:
-            client = self.get_client()
-            query = client.table("conversation_turns")\
-                .select("id")\
-                .eq("session_id", session_id)\
-                .limit(1)
-            
-            if user_id:
-                query = query.eq("user_id", user_id)
-                
-            result = query.execute()
-            return len(result.data) > 0
-        except Exception:
-            return False
-    
     # =========================================================================
-    # LOGGING - Save Conversation Turns
+    # LOGGING
     # =========================================================================
     
     async def log_conversation_turn(
@@ -234,16 +221,16 @@ class SupabaseService:
     ) -> Optional[str]:
         """Log a complete conversation turn."""
         try:
-            # Create or update session metadata
+            # 1. Update Session Metadata
             await self.create_or_update_session(session_id, user_message, user_id)
             
             client = self.get_client()
             
-            # Extract intake profile data
             intake = state_snapshot.get("intake_profile", {})
             emotions = intake.get("emotional_state", {})
             safety = intake.get("safety_concerns", {})
             
+            # 2. Log Turn
             turn_data = {
                 "session_id": session_id,
                 "turn_number": turn_number,
@@ -257,30 +244,33 @@ class SupabaseService:
                 "created_at": datetime.utcnow().isoformat()
             }
             
-            # Add user_id if provided
             if user_id:
                 turn_data["user_id"] = user_id
             
             result = client.table("conversation_turns").insert(turn_data).execute()
             turn_id = result.data[0]["id"] if result.data else None
             
-            # Log each agent's activity
-            for log in agent_logs:
-                log_data = {
-                    "session_id": session_id,
-                    "turn_id": turn_id,
-                    "agent_name": log.get("agent", "unknown"),
-                    "input_summary": log.get("thought", ""),
-                    "output_summary": log.get("status", ""),
-                    "duration_ms": log.get("duration_ms"),
-                    "model_used": self.settings.model_name,
-                    "decision_made": log.get("thought", ""),
-                    "created_at": datetime.utcnow().isoformat()
-                }
-                if user_id:
-                    log_data["user_id"] = user_id
+            # 3. Log Agent Activity
+            if agent_logs:
+                logs_to_insert = []
+                for log in agent_logs:
+                    log_data = {
+                        "session_id": session_id,
+                        "turn_id": turn_id,
+                        "agent_name": log.get("agent", "unknown"),
+                        "input_summary": log.get("thought", ""),
+                        "output_summary": log.get("status", ""),
+                        "duration_ms": log.get("duration_ms"),
+                        "model_used": self.settings.model_name,
+                        "decision_made": log.get("thought", ""),
+                        "created_at": datetime.utcnow().isoformat()
+                    }
+                    if user_id:
+                        log_data["user_id"] = user_id
+                    logs_to_insert.append(log_data)
                     
-                client.table("agent_logs").insert(log_data).execute()
+                if logs_to_insert:
+                    client.table("agent_logs").insert(logs_to_insert).execute()
             
             return turn_id
             
@@ -314,79 +304,6 @@ class SupabaseService:
             print(f"Supabase query error: {e}")
             return []
     
-    async def get_agent_logs(
-        self,
-        session_id: str,
-        user_id: Optional[str] = None,
-        turn_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
-        """Retrieve agent logs for a session or specific turn."""
-        try:
-            client = self.get_client()
-            
-            query = client.table("agent_logs")\
-                .select("*")\
-                .eq("session_id", session_id)
-            
-            if user_id:
-                query = query.eq("user_id", user_id)
-            
-            if turn_id:
-                query = query.eq("turn_id", turn_id)
-            
-            result = query.order("created_at", desc=False).execute()
-            return result.data if result.data else []
-            
-        except Exception as e:
-            print(f"Supabase query error: {e}")
-            return []
-    
-    async def health_check(self) -> bool:
-        """Check if Supabase is connected."""
-        try:
-            client = self.get_client()
-            client.table("conversation_turns").select("id").limit(1).execute()
-            return True
-        except Exception:
-            return False
-    
-    async def get_all_sessions(self, limit: int = 50) -> List[Dict[str, Any]]:
-        """Retrieve all chat sessions with metadata."""
-        try:
-            client = self.get_client()
-            
-            # Get unique sessions with their last message
-            result = client.table("conversation_turns")\
-                .select("session_id, user_message, created_at")\
-                .order("created_at", desc=True)\
-                .limit(limit * 2)\
-                .execute()
-            
-            if not result.data:
-                return []
-            
-            # Group by session_id and get the latest message for each
-            sessions_map = {}
-            for turn in result.data:
-                session_id = turn["session_id"]
-                if session_id not in sessions_map:
-                    sessions_map[session_id] = {
-                        "session_id": session_id,
-                        "preview": turn["user_message"][:100],  # First 100 chars
-                        "last_message_at": turn["created_at"],
-                        "created_at": turn["created_at"]
-                    }
-            
-            # Convert to list and sort by last message
-            sessions = list(sessions_map.values())
-            sessions.sort(key=lambda x: x["last_message_at"], reverse=True)
-            
-            return sessions[:limit]
-            
-        except Exception as e:
-            print(f"Supabase sessions query error: {e}")
-            return []
-    
     async def create_or_update_session(self, session_id: str, user_message: str, user_id: Optional[str] = None) -> bool:
         """Create or update session metadata."""
         try:
@@ -402,12 +319,15 @@ class SupabaseService:
             if existing.data:
                 # Update existing session
                 update_data = {"last_message_at": datetime.utcnow().isoformat()}
+                if user_id:
+                    update_data["user_id"] = user_id # Ensure ownership is claimed if previously anon
+                    
                 client.table("sessions")\
                     .update(update_data)\
                     .eq("session_id", session_id)\
                     .execute()
             else:
-                # Create new session with preview (truncate to ~100 chars)
+                # Create new session
                 preview = user_message[:100] + "..." if len(user_message) > 100 else user_message
                 session_data = {
                     "session_id": session_id,
@@ -429,19 +349,13 @@ class SupabaseService:
             return False
 
 
-# Singleton instance
 _service: Optional[SupabaseService] = None
 
-
 def get_supabase_service() -> SupabaseService:
-    """Get or create Supabase service singleton."""
     global _service
     if _service is None:
         _service = SupabaseService()
     return _service
 
-
-# Backwards compatibility alias
 def get_supabase_logger() -> SupabaseService:
-    """Alias for backwards compatibility."""
     return get_supabase_service()

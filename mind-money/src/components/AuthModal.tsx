@@ -1,9 +1,8 @@
-// src/components/AuthModal.tsx
 'use client';
 
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/context/AuthContext'; // Ensures it pulls from the corrected file
 import clsx from 'clsx';
 
 interface AuthModalProps {
@@ -21,6 +20,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  // These will now work because we updated AuthContext.tsx above
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
 
   if (!isOpen) return null;
@@ -67,32 +67,33 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      {/* Modal - Using Warm Theme Variables */}
+      <div className="relative bg-[var(--surface)] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-[var(--border)] animate-in fade-in zoom-in-95 duration-200">
+        
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-slate-800">
+        <div className="px-6 py-4 border-b border-[var(--border)] flex justify-between items-center bg-[var(--background)]">
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">
             {mode === 'signin' && 'Welcome Back'}
             {mode === 'signup' && 'Create Account'}
             {mode === 'reset' && 'Reset Password'}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-1 hover:bg-[var(--neutral-dark)]/20 rounded-lg transition-colors text-[var(--text-secondary)]"
           >
-            <X size={20} className="text-slate-500" />
+            <X size={20} />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 bg-white">
           {/* Error Message */}
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm">
               <AlertCircle size={16} />
               {error}
             </div>
@@ -100,7 +101,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
 
           {/* Success Message */}
           {message && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+            <div className="p-3 bg-[var(--neutral)] border border-[var(--success)]/30 rounded-lg text-[var(--success)] text-sm font-medium">
               {message}
             </div>
           )}
@@ -108,17 +109,17 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
           {/* Display Name (signup only) */}
           {mode === 'signup' && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
                 Display Name
               </label>
               <div className="relative">
-                <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-light)]" />
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Your name"
-                  className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:border-transparent transition-all bg-[var(--neutral)]"
                 />
               </div>
             </div>
@@ -126,18 +127,18 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
               Email
             </label>
             <div className="relative">
-              <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-light)]" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:border-transparent transition-all bg-[var(--neutral)]"
               />
             </div>
           </div>
@@ -145,11 +146,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
           {/* Password (not for reset) */}
           {mode !== 'reset' && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
                 Password
               </label>
               <div className="relative">
-                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-light)]" />
                 <input
                   type="password"
                   value={password}
@@ -157,17 +158,17 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:border-transparent transition-all bg-[var(--neutral)]"
                 />
               </div>
             </div>
           )}
 
-          {/* Submit Button */}
+          {/* Submit Button - Uses 'btn-primary' from globals.css */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full btn-primary mt-2"
           >
             {loading && <Loader2 size={18} className="animate-spin" />}
             {mode === 'signin' && 'Sign In'}
@@ -180,19 +181,19 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
             <>
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200"></div>
+                  <div className="w-full border-t border-[var(--border)]"></div>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-slate-500">or continue with</span>
+                <div className="relative flex justify-center text-xs uppercase tracking-wider font-semibold">
+                  <span className="px-2 bg-white text-[var(--text-light)]">or continue with</span>
                 </div>
               </div>
 
-              {/* Google Sign In */}
+              {/* Google Sign In - Uses 'btn-outline' style */}
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={loading}
-                className="w-full py-2.5 border border-slate-200 hover:bg-slate-50 disabled:opacity-50 rounded-lg transition-colors flex items-center justify-center gap-2 text-slate-700"
+                className="w-full py-2.5 border border-[var(--border)] hover:bg-[var(--neutral)] rounded-xl transition-all flex items-center justify-center gap-2 text-[var(--text-secondary)] font-medium bg-white"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -207,20 +208,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
         </form>
 
         {/* Footer Links */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 text-center text-sm">
+        <div className="px-6 py-4 bg-[var(--neutral)]/50 border-t border-[var(--border)] text-center text-sm">
           {mode === 'signin' && (
             <>
-              <button
-                onClick={() => setMode('reset')}
-                className="text-teal-600 hover:text-teal-700"
-              >
+              <button onClick={() => setMode('reset')} className="text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors">
                 Forgot password?
               </button>
-              <span className="text-slate-400 mx-2">•</span>
-              <button
-                onClick={() => setMode('signup')}
-                className="text-teal-600 hover:text-teal-700"
-              >
+              <span className="text-[var(--text-light)] mx-2">•</span>
+              <button onClick={() => setMode('signup')} className="text-[var(--primary)] hover:text-[var(--primary-dark)] font-semibold transition-colors">
                 Create account
               </button>
             </>
@@ -228,19 +223,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
           {mode === 'signup' && (
             <>
               Already have an account?{' '}
-              <button
-                onClick={() => setMode('signin')}
-                className="text-teal-600 hover:text-teal-700 font-medium"
-              >
+              <button onClick={() => setMode('signin')} className="text-[var(--primary)] hover:text-[var(--primary-dark)] font-semibold transition-colors">
                 Sign in
               </button>
             </>
           )}
           {mode === 'reset' && (
-            <button
-              onClick={() => setMode('signin')}
-              className="text-teal-600 hover:text-teal-700"
-            >
+            <button onClick={() => setMode('signin')} className="text-[var(--primary)] hover:text-[var(--primary-dark)] font-semibold transition-colors">
               Back to sign in
             </button>
           )}

@@ -1,8 +1,8 @@
 """
-main.py - The API Entrypoint (Fixed for Compatibility)
+main.py - The API Entrypoint (Fixed History & Logs)
 """
-from typing import Optional, List
-from fastapi import FastAPI, HTTPException, Header, Depends
+from typing import Optional, List, Dict, Any
+from fastapi import FastAPI, HTTPException, Header, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from schemas import ChatRequest, ChatResponse
@@ -20,32 +20,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ============================================================================
-# AUTH HELPERS
-# ============================================================================
-async def get_current_user(authorization: Optional[str] = Header(None)) -> Optional[str]:
-    """Simple auth extractor for hackathon."""
-    if not authorization or not authorization.startswith("Bearer "):
-        return None
-    # In production, verify JWT here. For now, return None or parse if needed.
-    return None
-
-# ============================================================================
-# ENDPOINTS
-# ============================================================================
-
-# --- 1. HISTORY ENDPOINT (Matches Frontend) ---
-@app.get("/api/history/{session_id}")
-async def get_history(session_id: str):
+# --- 1. GET SESSIONS (Fixed Attribute Error) ---
+@app.get("/api/sessions")
+async def list_sessions(user_id: Optional[str] = Query(None)):
     """
-    Frontend expects this specific route to load chat history.
+    Fetch all unique sessions for a specific user.
     """
     logger = get_supabase_logger()
+    # Correct method call matching the updated supabase_logger.py
+    sessions = await logger.get_user_sessions(user_id)
+    return {"sessions": sessions}
+
+# --- 2. GET HISTORY ---
+@app.get("/api/history/{session_id}")
+async def get_history(session_id: str):
+    logger = get_supabase_logger()
     try:
-        # Fetch turns from Supabase
         history = await logger.get_session_history(session_id)
         
-        # Format for Frontend (User/AI pairs)
         formatted_history = []
         for turn in history:
             formatted_history.append({
@@ -56,7 +48,8 @@ async def get_history(session_id: str):
             formatted_history.append({
                 "id": f"{turn['id']}-ai",
                 "role": "assistant",
-                "content": turn['assistant_response']
+                "content": turn['assistant_response'],
+                "actionPlan": turn.get('state_snapshot', {}).get('action_plan')
             })
             
         return {"history": formatted_history}
@@ -64,20 +57,16 @@ async def get_history(session_id: str):
         print(f"❌ History Error: {e}")
         return {"history": []}
 
-# --- 2. CHAT ENDPOINT ---
+# --- 3. CHAT ENDPOINT (Fixed User Tracking) ---
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat_endpoint(
-    request: ChatRequest,
-    auth_user: Optional[str] = Depends(get_current_user)
-):
-    print(f"📥 Received: {request.message} | Session: {request.session_id}")
+async def chat_endpoint(request: ChatRequest):
+    # Debug print to confirm user_id is arriving
+    print(f"📥 Received: {request.message} (Session: {request.session_id}) User: {request.user_id}")
     
     try:
         logger = get_supabase_logger()
         
-        # 1. Fetch Context (History)
-        # We assume the frontend passes the relevant history, but we can also fetch it
-        # to ensure the LLM has the full context if 'history' is empty.
+        # 1. Fetch Context
         history_context = request.history
         if not history_context:
              db_history = await logger.get_session_history(request.session_id)
@@ -91,55 +80,28 @@ async def chat_endpoint(
             history=history_context
         )
         
-        # 3. Log to Supabase
-        # We calculate turn number based on existing history length
-        turn_number = (len(history_context) // 2) + 1
+        # 3. Log to Supabase (WITH USER ID)
+        logs = result_state.get("agent_log", [])
         
         await logger.log_conversation_turn(
             session_id=request.session_id,
-            turn_number=turn_number,
+            turn_number=(len(history_context) // 2) + 1,
             user_message=request.message,
             assistant_response=result_state["final_response"],
             state_snapshot=result_state,
-            agent_logs=result_state.get("agent_log", [])
+            agent_logs=logs,
+            user_id=request.user_id  # <--- PASSING THE USER ID
         )
         
         return ChatResponse(
             response=result_state["final_response"],
-            agent_logs=result_state["agent_log"],
+            agent_logs=logs,
             action_plan=result_state.get("action_plan", {})
         )
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"❌ Chat Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# --- 3. SESSION MANAGEMENT (Optional/Advanced) ---
-@app.get("/api/sessions")
-async def list_sessions():
-    """Fetch all chat sessions with preview."""
-    logger = get_supabase_logger()
-    try:
-        sessions = await logger.get_all_sessions(limit=50)
-        # Format sessions for frontend
-        formatted_sessions = []
-        for session in sessions:
-            formatted_sessions.append({
-                "session_id": session.get("session_id"),
-                "preview": session.get("preview", "New conversation"),
-                "last_message_at": session.get("last_message_at"),
-                "created_at": session.get("first_message_at")
-            })
-        return {"sessions": formatted_sessions}
-    except Exception as e:
-        print(f"Error fetching sessions: {e}")
-        return {"sessions": []}
-
-@app.get("/health")
-async def health_check():
-    logger = get_supabase_logger()
-    is_connected = await logger.health_check()
-    return {"status": "healthy" if is_connected else "degraded"}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
