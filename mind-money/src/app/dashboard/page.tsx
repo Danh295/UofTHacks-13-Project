@@ -3,9 +3,8 @@
 import React, { useState } from 'react';
 import { useFinancial } from '@/context/FinancialContext';
 import { ActionItem } from '@/components/ActionItem';
-import { PieChart, ListTodo, Save, Loader2, MessageSquare, ArrowLeft } from 'lucide-react';
+import { PieChart, ListTodo, Save, Loader2, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 export default function DashboardPage() {
   const { actions, toggleAction, financialFormSchema } = useFinancial();
@@ -31,18 +30,7 @@ export default function DashboardPage() {
             <p className="text-[var(--text-secondary)] text-sm">Track your progress and update your profile</p>
           </div>
           
-          <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 mb-4 transition-colors text-sm font-medium">
-            <ArrowLeft size={16} />
-            Back to Conversation
-          </Link>
-
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-800">Financial Command Center</h1>
-              <p className="text-slate-500 text-sm">Track your progress and update your profile</p>
-            </div>
-            
-            <div className="flex gap-2">
+          <div className="flex gap-2">
             <button
               onClick={() => router.push('/')}
               className="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white hover:shadow-md"

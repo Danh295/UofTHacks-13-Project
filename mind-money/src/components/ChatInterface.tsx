@@ -34,8 +34,8 @@ type ChatSession = {
 };
 
 export default function ChatInterface() {
-  // --- FIX 1: Removed duplicate declaration ---
   const { addActionPlan } = useFinancial(); 
+  const { messages, addMessage, setMessages, isThinking, setIsThinking } = useChat();
   const router = useRouter();
   const [sessionId, setSessionId] = useState(`session-${Date.now()}`);
   const [input, setInput] = useState('');
@@ -116,7 +116,7 @@ export default function ChatInterface() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMsg.content,
-          history: messages.map(m => ({ role: m.role, content: m.content })),
+          history: messages.map((m: Message) => ({ role: m.role, content: m.content })),
           session_id: sessionId
         })
       });
@@ -213,7 +213,7 @@ export default function ChatInterface() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-gradient-to-b from-[var(--background)] to-[var(--neutral)]">
-          {messages.map((msg) => (
+          {messages.map((msg: Message) => (
             <div key={msg.id} className={clsx("flex gap-4 max-w-3xl mx-auto", msg.role === 'user' ? "flex-row-reverse" : "")}>
               
               <div className={clsx(
