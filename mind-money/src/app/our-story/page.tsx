@@ -22,7 +22,7 @@ export default function OurStoryPage() {
             </button>
             <div>
               <h1 className="text-2xl font-bold text-[var(--text-primary)]">Our Story</h1>
-              <p className="text-[var(--text-secondary)] text-sm">Meet the team behind MindMoney</p>
+              <p className="text-[var(--text-secondary)] text-sm">Meet the team behind MoneyBird</p>
             </div>
           </div>
           
@@ -50,18 +50,20 @@ export default function OurStoryPage() {
           {/* Team Photo Section */}
           <div className="bg-white rounded-2xl border border-[var(--border)] shadow-lg p-8 mb-8">
             <div className="flex flex-col items-center">
-              {/* Image Placeholder */}
-              <div className="w-full max-w-2xl aspect-video bg-gradient-to-br from-[var(--neutral)] to-[var(--secondary-light)] rounded-xl border-2 border-dashed border-[var(--border)] flex items-center justify-center mb-6">
-                <div className="text-center p-8">
-                  <div className="text-4xl mb-4">📸</div>
-                  <p className="text-[var(--text-secondary)] font-medium">Team Photo</p>
-                  <p className="text-xs text-[var(--text-light)] mt-2">Paste your group photo here</p>
-                </div>
+              {/* Team Photo */}
+              <div className="w-full max-w-2xl aspect-video relative rounded-xl overflow-hidden mb-6">
+                <Image
+                  src="/images/team.png"
+                  alt="Our Team"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
               
               {/* Team Name */}
               <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-2 text-center bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] bg-clip-text text-transparent">
-                [Team Name TBD]
+                [Yellow MoneyBird]
               </h2>
               
               <p className="text-sm text-[var(--text-secondary)] text-center">
@@ -79,20 +81,70 @@ export default function OurStoryPage() {
             
             <div className="prose prose-slate max-w-none">
               <p className="text-[var(--text-primary)] leading-relaxed mb-4">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                關於我們（詩）
+
+我們成立於二〇二六年。
+不是因為世界需要更多工具，
+而是因為我們自己，
+曾經站在生活裡，不知道該往哪裡飛。
+
+我們的身高不一樣——
+一七五公分，
+一七〇公分，
+一六六點五公分，
+一五七點二公分。
+但站在現實面前，
+沒有人真的比較高。
+
+我們之中，
+有人從中國來，
+有人從印尼來，
+也有人出生在加拿大，
+卻一樣在華人家庭的期待裡長大。
+我們在多倫多、在萬錦市，
+學會如何在語言之間切換，
+在文化之間生存，
+在夢想與責任之間保持平衡。
               </p>
               
               <p className="text-[var(--text-primary)] leading-relaxed mb-4">
-                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </p>
-              
-              <p className="text-[var(--text-primary)] leading-relaxed">
-                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
+                我們知道什麼叫做沒有退路。
+知道存款數字不只是數字，
+而是失眠的夜晚，
+是不敢打開銀行 App 的早晨，
+是對未來既期待、又害怕的矛盾。
+
+沒有人教過我們，
+如何同時照顧情緒與財務。
+世界只要求你撐住、算清楚、別犯錯。
+卻很少有人問：
+你，還好嗎？
+
+所以我們開始了這個專案。
+不是為了完美，
+而是為了誠實。
+不是為了控制，
+而是為了給人一雙能夠保持平衡的翅膀。
+
+我們相信科技可以溫柔，
+資料可以被尊重，
+錯誤可以被承接，
+而安全感，
+是所有選擇之前最重要的前提。
+
+我們來自不同的起點，
+卻走向同一個方向——
+讓人們在混亂中站得穩，
+在壓力中不再孤單，
+在準備好之前，
+不必急著飛。
               </p>
               
               <div className="mt-6 p-4 bg-gradient-to-r from-[var(--secondary-light)] to-[var(--neutral)] rounded-lg border border-[var(--border)]">
                 <p className="text-sm text-[var(--text-secondary)] italic text-center">
-                  "TBD - Add team quote or mission statement here"
+                  "We were founded in 2026. Not because the world needs more tools, but because we ourselves once stood in the midst of life, unsure of where to fly. We are all different heights—175 cm, 170 cm, 166.5 cm, 157.2 cm. But in reality, no one is truly taller. Some of us come from China, some from Indonesia, and some were born in Canada, yet all grew up under the same expectations of Chinese families. In Toronto and Markham, we learned how to switch between languages, survive across cultures, and maintain a balance between dreams and responsibilities.
+<br></br>
+We know what it means to have no way out. We know that bank account numbers are not just numbers, but represent sleepless nights, mornings too afraid to open the banking app, and the contradictory mix of anticipation and fear for the future. No one taught us how to manage our emotions and finances simultaneously. The world only demands that you hold on, calculate carefully, and avoid mistakes. Few ask: Are you okay? So we started this project. Not for perfection, but for honesty. It's not about control, but about giving people wings to maintain their balance. We believe technology can be gentle, data can be respected, mistakes can be accepted, and a sense of security is the most important prerequisite before any choice. We come from different starting points, but we are heading in the same direction—to help people stand firm in chaos, to no longer feel alone under pressure, and to not rush to fly before they are ready."
                 </p>
               </div>
             </div>
@@ -105,7 +157,7 @@ export default function OurStoryPage() {
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white rounded-xl font-semibold hover:shadow-lg transition-all"
             >
               <MessageSquare size={18} />
-              Start Chatting with MindMoney
+              Start Chatting with MoneyBird
             </button>
           </div>
         </div>

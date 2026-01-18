@@ -35,7 +35,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // Use sessionStorage instead of localStorage so guest data clears on tab close
   const [sessionId] = useState(() => {
     if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('mindmoney_session_id') || `sess-${Math.random().toString(36).substr(2, 9)}`;
+      return sessionStorage.getItem('moneybird_session_id') || `sess-${Math.random().toString(36).substr(2, 9)}`;
     }
     return 'demo-session';
   });
@@ -47,7 +47,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // --- 1. SAVE SESSION ID TO SESSION STORAGE ---
   useEffect(() => {
     if (typeof window !== 'undefined') {
-        sessionStorage.setItem('mindmoney_session_id', sessionId);
+        sessionStorage.setItem('moneybird_session_id', sessionId);
     }
   }, [sessionId]);
 

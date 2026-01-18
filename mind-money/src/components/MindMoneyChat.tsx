@@ -6,7 +6,7 @@ import { Send, Terminal, User, Bot, Loader2, ChevronDown, ChevronUp } from "luci
 type Log = { agent: string; thought: string };
 type Message = { role: "user" | "ai"; text: string; logs?: Log[] };
 
-export default function MindMoneyChat() {
+export default function MoneyBirdChat() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
