@@ -177,7 +177,7 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-100 overflow-hidden relative">
+    <div className="flex h-screen bg-[var(--background)] overflow-hidden relative">
       
       {/* MAIN CHAT AREA */}
       <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full bg-white shadow-xl h-full relative">
@@ -187,22 +187,22 @@ export default function ChatInterface() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowHistoryPanel(!showHistoryPanel)}
-              className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+              className="p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--neutral)] transition-colors"
             >
               <Menu size={20} />
             </button>
-            <div className="bg-indigo-600 p-2 rounded-lg">
+            <div className="bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] p-2 rounded-lg shadow-md">
               <Sparkles className="text-white w-5 h-5" />
             </div>
             <div>
-              <h1 className="font-bold text-slate-800">MindMoney Architect</h1>
-              <p className="text-xs text-slate-500">Orchestrated Financial Intelligence</p>
+              <h1 className="font-bold text-[var(--text-primary)]">MindMoney Architect</h1>
+              <p className="text-xs text-[var(--text-secondary)]">Orchestrated Financial Intelligence</p>
             </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => router.push('/dashboard')}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white hover:bg-emerald-700"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white hover:shadow-md"
             >
               <LayoutDashboard size={16} />
               Dashboard
@@ -211,8 +211,8 @@ export default function ChatInterface() {
               onClick={() => setShowAgentPanel(!showAgentPanel)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 showAgentPanel 
-                  ? "bg-slate-900 text-white" 
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-[var(--primary-dark)] text-white" 
+                  : "bg-[var(--neutral)] text-[var(--text-primary)] hover:bg-[var(--neutral-dark)]"
               }`}
             >
               <BrainCircuit size={16} />
@@ -222,16 +222,16 @@ export default function ChatInterface() {
         </header>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-50/50">
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-gradient-to-b from-[var(--background)] to-[var(--neutral)]">
           {messages.map((msg) => (
             <div key={msg.id} className={clsx("flex gap-4 max-w-3xl mx-auto", msg.role === 'user' ? "flex-row-reverse" : "")}>
               
               {/* Avatar */}
               <div className={clsx(
                 "w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm",
-                msg.role === 'assistant' ? "bg-white border border-indigo-100" : "bg-indigo-600"
+                msg.role === 'assistant' ? "bg-white border border-[var(--border)]" : "bg-gradient-to-br from-[var(--primary)] to-[var(--accent)]"
               )}>
-                {msg.role === 'assistant' ? <Bot size={20} className="text-indigo-600" /> : <User size={20} className="text-white" />}
+                {msg.role === 'assistant' ? <Bot size={20} className="text-[var(--primary)]" /> : <User size={20} className="text-white" />}
               </div>
 
               <div className="flex-1 space-y-4">
@@ -239,8 +239,8 @@ export default function ChatInterface() {
                 <div className={clsx(
                   "p-6 rounded-2xl shadow-sm text-sm leading-relaxed prose prose-slate max-w-none",
                   msg.role === 'assistant' 
-                    ? "bg-white border border-slate-200 text-slate-700" 
-                    : "bg-indigo-600 text-white prose-invert"
+                    ? "bg-white border border-[var(--border)] text-[var(--text-primary)]" 
+                    : "bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] text-white prose-invert"
                 )}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {msg.content}
@@ -257,10 +257,10 @@ export default function ChatInterface() {
           
           {isThinking && (
              <div className="max-w-3xl mx-auto flex gap-4">
-               <div className="w-10 h-10 rounded-full bg-white border border-indigo-100 flex items-center justify-center animate-pulse">
-                 <Bot size={20} className="text-indigo-400"/>
+               <div className="w-10 h-10 rounded-full bg-white border border-[var(--border)] flex items-center justify-center animate-pulse">
+                 <Bot size={20} className="text-[var(--primary)]"/>
                </div>
-               <div className="text-slate-400 text-sm flex items-center gap-2">
+               <div className="text-[var(--text-secondary)] text-sm flex items-center gap-2">
                  <BrainCircuit size={14} className="animate-spin" />
                  Analyzing financial context...
                </div>
@@ -278,12 +278,12 @@ export default function ChatInterface() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="E.g., I want to pay off my $5k debt but also save for a trip to Japan..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-6 pr-14 py-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+              className="w-full bg-[var(--neutral)] border border-[var(--border)] rounded-xl pl-6 pr-14 py-4 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all shadow-sm"
             />
             <button 
               onClick={handleSend}
               disabled={!input.trim() || isThinking}
-              className="absolute right-3 top-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white p-2 rounded-lg transition-colors"
+              className="absolute right-3 top-3 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] hover:shadow-md disabled:opacity-50 text-white p-2 rounded-lg transition-all"
             >
               <Send size={20} />
             </button>
@@ -296,11 +296,11 @@ export default function ChatInterface() {
         "fixed inset-y-0 left-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out border-r border-slate-200 z-50",
         showHistoryPanel ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-          <h3 className="text-slate-800 font-semibold text-sm uppercase tracking-wider">
+        <div className="p-4 border-b border-[var(--border)] bg-gradient-to-r from-[var(--neutral)] to-[var(--secondary-light)] flex justify-between items-center">
+          <h3 className="text-[var(--text-primary)] font-semibold text-sm uppercase tracking-wider">
             Chat History
           </h3>
-          <button onClick={() => setShowHistoryPanel(false)} className="text-slate-500 hover:text-slate-800">
+          <button onClick={() => setShowHistoryPanel(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
             <X size={16} />
           </button>
         </div>
@@ -309,7 +309,7 @@ export default function ChatInterface() {
           {/* New Chat Button */}
           <button
             onClick={startNewChat}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg p-3 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] hover:shadow-md text-white rounded-lg p-3 text-sm font-medium transition-all flex items-center justify-center gap-2"
           >
             <Sparkles size={16} />
             Start New Chat
@@ -348,18 +348,18 @@ export default function ChatInterface() {
                 key={session.session_id}
                 onClick={() => loadChatHistory(session.session_id)}
                 className={clsx(
-                  "bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors",
-                  session.session_id === sessionId && "bg-indigo-50 border-indigo-300"
+                  "bg-[var(--neutral)] rounded-lg p-3 border border-[var(--border)] hover:bg-[var(--neutral-dark)] cursor-pointer transition-colors",
+                  session.session_id === sessionId && "bg-[var(--secondary-light)] border-[var(--primary)]"
                 )}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  {index === 0 && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
-                  <span className="font-semibold text-sm text-slate-800">{timeLabel}</span>
+                  {index === 0 && <div className="w-2 h-2 rounded-full bg-[var(--success)]" />}
+                  <span className="font-semibold text-sm text-[var(--text-primary)]">{timeLabel}</span>
                 </div>
-                <p className="text-xs text-slate-600 line-clamp-2">
+                <p className="text-xs text-[var(--text-secondary)] line-clamp-2">
                   {session.preview}
                 </p>
-                <span className="text-[10px] text-slate-400 mt-1 block">
+                <span className="text-[10px] text-[var(--text-light)] mt-1 block">
                   {date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                 </span>
               </div>
@@ -370,37 +370,37 @@ export default function ChatInterface() {
 
       {/* RIGHT: AGENT NERVE CENTER (Collapsible) */}
       <div className={clsx(
-        "fixed inset-y-0 right-0 w-80 bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-slate-800 z-50",
+        "fixed inset-y-0 right-0 w-80 bg-[var(--primary-dark)] shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-[var(--primary)] z-50",
         showAgentPanel ? "translate-x-0" : "translate-x-full"
       )}>
-        <div className="p-4 border-b border-slate-800 bg-slate-950 flex justify-between items-center">
-          <h3 className="text-indigo-400 font-mono text-xs font-bold uppercase tracking-wider">
+        <div className="p-4 border-b border-[var(--primary)] bg-gradient-to-r from-[var(--primary-dark)] to-[var(--primary)] flex justify-between items-center">
+          <h3 className="text-white font-mono text-xs font-bold uppercase tracking-wider">
             Orchestration Log
           </h3>
-          <button onClick={() => setShowAgentPanel(false)} className="text-slate-500 hover:text-white">
+          <button onClick={() => setShowAgentPanel(false)} className="text-white/70 hover:text-white">
             <X size={16} />
           </button>
         </div>
         
         <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-60px)]">
           {agentLogs.map((log, i) => (
-            <div key={i} className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 text-xs animate-in fade-in slide-in-from-right-8">
+            <div key={i} className="bg-white/10 rounded-lg p-3 border border-white/20 text-xs animate-in fade-in slide-in-from-right-8">
               <div className="flex items-center gap-2 mb-2">
-                <span className={clsx("w-2 h-2 rounded-full", log.status === 'failed' ? "bg-red-500" : "bg-emerald-400")} />
-                <span className="font-bold text-slate-200">{log.agentName}</span>
+                <span className={clsx("w-2 h-2 rounded-full", log.status === 'failed' ? "bg-[var(--danger)]" : "bg-[var(--success)]")} />
+                <span className="font-bold text-white">{log.agentName}</span>
               </div>
-              <p className="text-slate-400 font-mono leading-relaxed opacity-80">
+              <p className="text-white/80 font-mono leading-relaxed opacity-80">
                 {log.thought}
               </p>
               {log.output && (
-                 <div className="mt-2 pt-2 border-t border-slate-700/50 text-[10px] text-indigo-300 font-mono truncate">
+                 <div className="mt-2 pt-2 border-t border-white/20 text-[10px] text-[var(--secondary-light)] font-mono truncate">
                    Output: {log.output}
                  </div>
               )}
             </div>
           ))}
           {agentLogs.length === 0 && (
-            <div className="text-center text-slate-600 mt-10 text-xs">
+            <div className="text-center text-white/50 mt-10 text-xs">
               Systems Idle.<br/>Waiting for user input.
             </div>
           )}
