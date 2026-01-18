@@ -183,7 +183,7 @@ class SupabaseService:
             client = self.get_client()
             
             query = client.table("sessions")\
-                .select("session_id, first_message_at, last_message_at, total_turns, had_safety_flag, user_id")\
+                .select("session_id, first_message_at, last_message_at, preview, total_turns, had_safety_flag, user_id")\
                 .order("last_message_at", desc=True)\
                 .limit(limit)
             
@@ -234,6 +234,9 @@ class SupabaseService:
     ) -> Optional[str]:
         """Log a complete conversation turn."""
         try:
+            # Create or update session metadata
+            await self.create_or_update_session(session_id, user_message, user_id)
+            
             client = self.get_client()
             
             # Extract intake profile data
@@ -384,7 +387,7 @@ class SupabaseService:
             print(f"Supabase sessions query error: {e}")
             return []
     
-    async def create_or_update_session(self, session_id: str, user_message: str) -> bool:
+    async def create_or_update_session(self, session_id: str, user_message: str, user_id: Optional[str] = None) -> bool:
         """Create or update session metadata."""
         try:
             client = self.get_client()
@@ -398,14 +401,25 @@ class SupabaseService:
             
             if existing.data:
                 # Update existing session
+                update_data = {"last_message_at": datetime.utcnow().isoformat()}
                 client.table("sessions")\
-                    .update({"last_message_at": datetime.utcnow().isoformat()})\
+                    .update(update_data)\
                     .eq("session_id", session_id)\
                     .execute()
             else:
-                # Create new session
+                # Create new session with preview (truncate to ~100 chars)
+                preview = user_message[:100] + "..." if len(user_message) > 100 else user_message
+                session_data = {
+                    "session_id": session_id,
+                    "preview": preview,
+                    "first_message_at": datetime.utcnow().isoformat(),
+                    "last_message_at": datetime.utcnow().isoformat()
+                }
+                if user_id:
+                    session_data["user_id"] = user_id
+                    
                 client.table("sessions")\
-                    .insert({"session_id": session_id})\
+                    .insert(session_data)\
                     .execute()
             
             return True

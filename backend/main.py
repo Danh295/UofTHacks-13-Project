@@ -117,10 +117,23 @@ async def chat_endpoint(
 # --- 3. SESSION MANAGEMENT (Optional/Advanced) ---
 @app.get("/api/sessions")
 async def list_sessions():
-    """Placeholder for session listing."""
-    # Logic: Query 'sessions' table distinct by session_id
-    # For now return empty or implement in supabase_logger if needed
-    return {"sessions": []}
+    """Fetch all chat sessions with preview."""
+    logger = get_supabase_logger()
+    try:
+        sessions = await logger.get_all_sessions(limit=50)
+        # Format sessions for frontend
+        formatted_sessions = []
+        for session in sessions:
+            formatted_sessions.append({
+                "session_id": session.get("session_id"),
+                "preview": session.get("preview", "New conversation"),
+                "last_message_at": session.get("last_message_at"),
+                "created_at": session.get("first_message_at")
+            })
+        return {"sessions": formatted_sessions}
+    except Exception as e:
+        print(f"Error fetching sessions: {e}")
+        return {"sessions": []}
 
 @app.get("/health")
 async def health_check():
